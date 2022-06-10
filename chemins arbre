@@ -1,0 +1,70 @@
+type 'a ab = 
+	| Nil
+    | N of 'a *'a ab * 'a ab;;
+let atest =N (2 ,N (3 ,Nil ,N (6 , Nil , Nil )) ,N (1 ,N (2 ,N (5 , Nil , Nil ) ,N (1 , Nil , Nil )) ,N (3 ,Nil ,N (1 , Nil , Nil ))))      
+
+let arbre_bis = N(1,N(2,N(3,Nil,Nil),N(1,Nil,Nil)),N(2,N(1,Nil,Nil),N(3,Nil,Nil)));;  
+
+(*méthode habituelle*)
+
+let rec poids_min a = match a with
+    | Nil -> failwith "poids_min"
+    | N(x, Nil, Nil) -> x
+    | N(x, ag, Nil) -> x + poids_min ag
+    | N(x, Nil, ad) -> x + poids_min ad
+    | N(x, ag, ad) -> let pg = poids_min ag and pd = poids_min ad in
+                      if pg <= pd then x + pg 
+                      else x + pd
+;;                      
+
+poids_min atest;;
+
+let chemin_min a = 
+    let rec aux aa = match aa with
+        | Nil -> failwith "poids_min"
+        | N(x, Nil, Nil) -> [x], x
+        | N(x, ag, Nil) -> let cg, pg = aux ag in x::cg, x+pg
+        | N(x, Nil, ad) -> let cd, pd = aux ad in x::cd, x+pd
+        | N(x, ag, ad) -> let cg, pg = aux ag and cd, pd = aux ad in
+                          if pg <= pd then x::cg, x + pg 
+                          else x::cd, x+ pd
+    in fst (aux a)
+;;
+
+chemin_min atest;;
+
+
+
+
+(*méthode par transfert sur listes*)
+let rec tete = function 
+	| Nil -> failwith"vide"
+    | N(x,_,_) -> x;;
+    
+let rec poids_min = function 
+	| Nil -> 0
+  | N(x,Nil,Nil) -> x
+  | N(x,ag,ad) -> if (tete ag) < (tete ad) then x + poids_min ag
+    				else if (tete ag) > (tete ad) then x + poids_min ad
+                         else x + min (poids_min (ag)) (poids_min (ad));;
+
+poids_min atest;;
+
+poids_min arbre_bis;;
+let rec somme_liste = function 
+	| [] -> 0
+    | h::t -> h + somme_liste t;;
+    
+let list_min l1 l2 =
+	if somme_liste l1 < somme_liste l2 then l1
+    else l2;;
+    
+    
+let rec chemin_min = function
+	| Nil -> []
+    | N(x,Nil,Nil) -> [x]
+    | N(x,ag,ad) -> if (tete ag) < (tete ad) then x::(chemin_min ag)
+    				else if (tete ag) > (tete ad) then x::(chemin_min ad)
+                         else x::(list_min (chemin_min ag) (chemin_min ad));;
+chemin_min atest;;
+chemin_min arbre_bis;;
